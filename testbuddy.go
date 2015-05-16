@@ -6,8 +6,18 @@ import (
 	"io/ioutil"
 	"reflect"
 	"runtime"
+	"strings"
 	"testing"
 )
+
+func GetFullFuncName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
+func GetShortFuncName(i interface{}) string {
+	name := GetFullFuncName(i)
+	return name[strings.LastIndex(name, ".")+1:]
+}
 
 type CallerInfo struct {
 	pc       uintptr
@@ -42,9 +52,7 @@ func SourceInfo(skip ...int) string {
 func AssertEqual(t *testing.T, val, expect interface{}) {
 	if !reflect.DeepEqual(val, expect) {
 		ci, _ := GetCallerInfo(1)
-		s := fmt.Sprintf("Expected: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
-		t.Log(s)
-		t.FailNow()
+		t.Errorf("Expected: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
 	}
 }
 
@@ -55,22 +63,16 @@ func MustPanic(t *testing.T, f TestingFunc) {
 		if r := recover(); r != nil {
 		}
 	}()
-
 	f(t)
-
 	ci, _ := GetCallerInfo(1)
-	s := fmt.Sprintf("Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
-	t.Log(s)
-	t.FailNow()
+	t.Errorf("Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
 }
 
 func MustNotPanic(t *testing.T, f TestingFunc) {
 	defer func() {
 		if r := recover(); r != nil {
 			ci, _ := GetCallerInfo(1)
-			s := fmt.Sprintf("Not Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
-			t.Log(s)
-			t.FailNow()
+			t.Errorf("Not Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
 		}
 	}()
 	f(t)
