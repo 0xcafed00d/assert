@@ -9,6 +9,14 @@ import (
 	"strings"
 )
 
+func ConvertTo(i interface{}, to reflect.Type) (interface{}, error) {
+	from := reflect.TypeOf(i)
+	if from.ConvertibleTo(to) {
+		return reflect.ValueOf(i).Convert(to), nil
+	}
+	return nil, fmt.Errorf("Cannot Convert From %v to %v", from, to)
+}
+
 func GetFullFuncName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
@@ -45,5 +53,5 @@ func SourceInfo(skip ...int) string {
 		sk = skip[0]
 	}
 	ci, _ := GetCallerInfo(sk)
-	return fmt.Sprintf("%s : [%d] : %s", ci.filename, ci.lineNum, ci.lineSrc)
+	return fmt.Sprintf("%s : [%d]\n%s", ci.filename, ci.lineNum, strings.Trim(ci.lineSrc, " \t"))
 }

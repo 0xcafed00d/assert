@@ -7,56 +7,44 @@ import (
 
 type T testing.T
 
-func (t *T) AssertEqual(val interface{}) func(expect interface{}) {
+type ValTest struct {
+	val interface{}
+	t   *T
+}
 
-	return func(expect interface{}) {
-		if !reflect.DeepEqual(val, expect) {
-			ci, _ := GetCallerInfo(1)
-			t.Errorf("Expected: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
-		}
+func (vt ValTest) Equal(expect interface{}) {
+	if !reflect.DeepEqual(vt.val, expect) {
+		vt.t.Errorf("Expected: [%v] got: [%v]\n%s", expect, vt.val, SourceInfo(2))
 	}
 }
 
-func (t *T) AssertEqualsNoErr(val interface{}, err error) func(expect interface{}) {
+func (vt ValTest) NotEqual(expect interface{}) {
+	if reflect.DeepEqual(vt.val, expect) {
+		ci, _ := GetCallerInfo(1)
+		vt.t.Errorf("Not Expecting: [%v] got: [%v]\n%s:[%d]\n%s", expect, vt.val, ci.filename, ci.lineNum, ci.lineSrc)
+	}
+}
+
+func (t *T) Assert(val interface{}) ValTest {
+	return ValTest{val, t}
+}
+
+func (t *T) AssertNoErr(val interface{}, err error) ValTest {
 	if err != nil {
 		ci, _ := GetCallerInfo(1)
 		t.Errorf("Expected No Error: got Error: [%v]\n%s:[%d]\n%s", err, ci.filename, ci.lineNum, ci.lineSrc)
 	}
 
-	return func(expect interface{}) {
-		if !reflect.DeepEqual(val, expect) {
-			ci, _ := GetCallerInfo(1)
-			t.Errorf("Expected: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
-		}
-	}
+	return ValTest{val, t}
 }
 
-func (t *T) AssertEqualsErr(val interface{}, err error) func(expect interface{}) {
+func (t *T) AssertErr(val interface{}, err error) ValTest {
 	if err == nil {
 		ci, _ := GetCallerInfo(1)
 		t.Errorf("Expected Error: got No Error: [%v]\n%s:[%d]\n%s", err, ci.filename, ci.lineNum, ci.lineSrc)
 	}
 
-	return func(expect interface{}) {
-		if !reflect.DeepEqual(val, expect) {
-			ci, _ := GetCallerInfo(1)
-			t.Errorf("Expected: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
-		}
-	}
-}
-
-func (t *T) AssertNotEqualsErr(val interface{}, err error) func(expect interface{}) {
-	if err != nil {
-		ci, _ := GetCallerInfo(1)
-		t.Errorf("Expected Error: got: [%v]\n%s:[%d]\n%s", err, ci.filename, ci.lineNum, ci.lineSrc)
-	}
-
-	return func(expect interface{}) {
-		if reflect.DeepEqual(val, expect) {
-			ci, _ := GetCallerInfo(1)
-			t.Errorf("Not Expecting: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
-		}
-	}
+	return ValTest{val, t}
 }
 
 type TestingFunc func(t *T)
