@@ -1,64 +1,67 @@
 package testbuddy
 
 import (
-	"bytes"
-	"fmt"
-	"io/ioutil"
 	"reflect"
-	"runtime"
-	"strings"
 	"testing"
 )
 
-func GetFullFuncName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
-}
+type T testing.T
 
-func GetShortFuncName(i interface{}) string {
-	name := GetFullFuncName(i)
-	return name[strings.LastIndex(name, ".")+1:]
-}
+func (t *T) AssertEqual(val interface{}) func(expect interface{}) {
 
-type CallerInfo struct {
-	pc       uintptr
-	filename string
-	lineNum  int
-	lineSrc  string
-}
-
-func GetCallerInfo(skip int) (CallerInfo, bool) {
-	pc, file, line, ok := runtime.Caller(skip + 1)
-
-	ci := CallerInfo{pc, file, line, "[no source]"}
-	if ok {
-		data, err := ioutil.ReadFile(file)
-		if err == nil {
-			lines := bytes.Split(data, []byte{'\n'})
-			ci.lineSrc = string(lines[ci.lineNum-1])
+	return func(expect interface{}) {
+		if !reflect.DeepEqual(val, expect) {
+			ci, _ := GetCallerInfo(1)
+			t.Errorf("Expected: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
 		}
 	}
-	return ci, ok
 }
 
-func SourceInfo(skip ...int) string {
-	sk := 1
-	if len(skip) > 0 {
-		sk = skip[0]
-	}
-	ci, _ := GetCallerInfo(sk)
-	return fmt.Sprintf("%s : [%d] : %s", ci.filename, ci.lineNum, ci.lineSrc)
-}
-
-func AssertEqual(t *testing.T, val, expect interface{}) {
-	if !reflect.DeepEqual(val, expect) {
+func (t *T) AssertEqualsNoErr(val interface{}, err error) func(expect interface{}) {
+	if err != nil {
 		ci, _ := GetCallerInfo(1)
-		t.Errorf("Expected: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
+		t.Errorf("Expected No Error: got Error: [%v]\n%s:[%d]\n%s", err, ci.filename, ci.lineNum, ci.lineSrc)
+	}
+
+	return func(expect interface{}) {
+		if !reflect.DeepEqual(val, expect) {
+			ci, _ := GetCallerInfo(1)
+			t.Errorf("Expected: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
+		}
 	}
 }
 
-type TestingFunc func(t *testing.T)
+func (t *T) AssertEqualsErr(val interface{}, err error) func(expect interface{}) {
+	if err == nil {
+		ci, _ := GetCallerInfo(1)
+		t.Errorf("Expected Error: got No Error: [%v]\n%s:[%d]\n%s", err, ci.filename, ci.lineNum, ci.lineSrc)
+	}
 
-func MustPanic(t *testing.T, f TestingFunc) {
+	return func(expect interface{}) {
+		if !reflect.DeepEqual(val, expect) {
+			ci, _ := GetCallerInfo(1)
+			t.Errorf("Expected: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
+		}
+	}
+}
+
+func (t *T) AssertNotEqualsErr(val interface{}, err error) func(expect interface{}) {
+	if err != nil {
+		ci, _ := GetCallerInfo(1)
+		t.Errorf("Expected Error: got: [%v]\n%s:[%d]\n%s", err, ci.filename, ci.lineNum, ci.lineSrc)
+	}
+
+	return func(expect interface{}) {
+		if reflect.DeepEqual(val, expect) {
+			ci, _ := GetCallerInfo(1)
+			t.Errorf("Not Expecting: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
+		}
+	}
+}
+
+type TestingFunc func(t *T)
+
+func (t *T) MustPanic(f TestingFunc) {
 	defer func() {
 		if r := recover(); r != nil {
 		}
@@ -68,7 +71,7 @@ func MustPanic(t *testing.T, f TestingFunc) {
 	t.Errorf("Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
 }
 
-func MustNotPanic(t *testing.T, f TestingFunc) {
+func (t *T) MustNotPanic(f TestingFunc) {
 	defer func() {
 		if r := recover(); r != nil {
 			ci, _ := GetCallerInfo(1)
