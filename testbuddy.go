@@ -20,8 +20,7 @@ func (vt ValTest) Equal(expect interface{}) {
 
 func (vt ValTest) NotEqual(expect interface{}) {
 	if reflect.DeepEqual(vt.val, expect) {
-		ci, _ := GetCallerInfo(1)
-		vt.t.Errorf("Not Expecting: [%v] got: [%v]\n%s:[%d]\n%s", expect, vt.val, ci.filename, ci.lineNum, ci.lineSrc)
+		vt.t.Errorf("Not Expected: [%v] got: [%v]\n%s", expect, vt.val, SourceInfo(2))
 	}
 }
 

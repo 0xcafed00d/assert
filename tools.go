@@ -9,10 +9,14 @@ import (
 	"strings"
 )
 
+func CallFunction(f interface{}, params []interface{}) (interface{}, error) {
+
+}
+
 func ConvertTo(i interface{}, to reflect.Type) (interface{}, error) {
 	from := reflect.TypeOf(i)
 	if from.ConvertibleTo(to) {
-		return reflect.ValueOf(i).Convert(to), nil
+		return reflect.ValueOf(i).Convert(to).Interface(), nil
 	}
 	return nil, fmt.Errorf("Cannot Convert From %v to %v", from, to)
 }
