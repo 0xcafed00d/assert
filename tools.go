@@ -9,8 +9,26 @@ import (
 	"strings"
 )
 
-func CallFunction(f interface{}, params []interface{}) (interface{}, error) {
+func CallFunction(f interface{}, args []interface{}) ([]interface{}, error) {
+	fval := reflect.ValueOf(f)
+	argVals := []reflect.Value{}
 
+	for i := 0; i < fval.Type().NumIn(); i++ {
+		arg, err := ConvertTo(args[i], fval.Type().In(i))
+		if err != nil {
+			return nil, err
+		}
+		argVals = append(argVals, reflect.ValueOf(arg))
+	}
+
+	retVals := fval.Call(argVals)
+	var ret []interface{}
+
+	for i := 0; i < len(retVals); i++ {
+		ret = append(ret, retVals[i].Interface())
+	}
+
+	return ret, nil
 }
 
 func ConvertTo(i interface{}, to reflect.Type) (interface{}, error) {
