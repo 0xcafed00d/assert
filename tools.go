@@ -7,7 +7,29 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"testing"
 )
+
+type Params []interface{}
+type Expect []interface{}
+
+type NotNil struct {
+}
+
+type TestData struct {
+	F interface{}
+	P Params
+	E Expect
+}
+
+func AutoTest(t *testing.T, data []TestData) {
+	for i, tst := range data {
+		result, err := CallFunction(tst.F, tst.P)
+		if err == nil {
+			panic(err.Error())
+		}
+	}
+}
 
 func CallFunction(f interface{}, args []interface{}) ([]interface{}, error) {
 	fval := reflect.ValueOf(f)

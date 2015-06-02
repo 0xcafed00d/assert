@@ -9,6 +9,12 @@ func test1(a, b, c int) int {
 	return a + b + c
 }
 
+var testData = []TestData{
+	{test1, Params{1, 2, 3}, Expect{6}},
+	{test1, Params{4, 2, 3}, Expect{9}},
+	{test1, Params{1, 2, 3}, Expect{1}},
+}
+
 func TestGetFuncName(tst *testing.T) {
 	t := (*T)(tst)
 
@@ -26,4 +32,6 @@ func TestGetFuncName(tst *testing.T) {
 	}
 
 	t.Assert(ret[0]).Equal(6)
+
+	AutoTest(tst, testData)
 }
