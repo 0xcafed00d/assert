@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
-	"testing"
 )
 
 type Params []interface{}
@@ -22,13 +21,17 @@ type TestData struct {
 	E Expect
 }
 
-func AutoTest(t *testing.T, data []TestData) {
+func AutoTest(data []TestData) error {
 	for i, tst := range data {
 		result, err := CallFunction(tst.F, tst.P)
-		if err == nil {
-			panic(err.Error())
+		if err != nil {
+			return fmt.Errorf("Param #%d Conversion Error: [%s]", i+1, err.Error())
 		}
+
+		_ = result
 	}
+
+	return nil
 }
 
 func CallFunction(f interface{}, args []interface{}) ([]interface{}, error) {
@@ -62,7 +65,11 @@ func ConvertTo(i interface{}, to reflect.Type) (interface{}, error) {
 }
 
 func GetFullFuncName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+	p := reflect.ValueOf(i).Pointer()
+	if p == 0 {
+		return "nil"
+	}
+	return runtime.FuncForPC(p).Name()
 }
 
 func GetShortFuncName(i interface{}) string {

@@ -11,7 +11,7 @@ func test1(a, b, c int) int {
 
 var testData = []TestData{
 	{test1, Params{1, 2, 3}, Expect{6}},
-	{test1, Params{4, 2, 3}, Expect{9}},
+	{test1, Params{4, "hello", 3}, Expect{9}},
 	{test1, Params{1, 2, 3}, Expect{1}},
 }
 
@@ -23,15 +23,8 @@ func TestGetFuncName(tst *testing.T) {
 
 	t.AssertErr(ConvertTo(5, reflect.TypeOf(test1)))
 
-	params := []interface{}{1, 2, 3}
-
-	ret, err := CallFunction(test1, params)
-
+	err := AutoTest(testData)
 	if err != nil {
-		tst.Fatalf("%s", err)
+		tst.Fatal(err)
 	}
-
-	t.Assert(ret[0]).Equal(6)
-
-	AutoTest(tst, testData)
 }
