@@ -9,8 +9,11 @@ func test1(a, b, c int) int {
 	return a + b + c
 }
 
+type dummy struct {
+}
+
 var testData = []TestData{
-	{test1, Params{1, 2, 3}, Expect{6}},
+	{test1, Params{1, 2, 3}, Expect{dummy{}}},
 	{test1, Params{4, "hello", 3}, Expect{9}},
 	{test1, Params{1, 2, 3}, Expect{1}},
 }

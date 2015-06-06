@@ -22,13 +22,34 @@ type TestData struct {
 }
 
 func AutoTest(data []TestData) error {
+
+	makeErr := func(i int, e error, info string) error {
+		return fmt.Errorf("Test #%d error: [%v]\n%s", i, e, info)
+	}
+
 	for i, tst := range data {
-		result, err := CallFunction(tst.F, tst.P)
+		results, err := CallFunction(tst.F, tst.P)
 		if err != nil {
-			return fmt.Errorf("Param #%d Conversion Error: [%s]", i+1, err.Error())
+			return makeErr(i, err, SourceInfo(2))
 		}
 
-		_ = result
+		if len(results) != len(tst.E) {
+			err := fmt.Errorf("Incorrect Returned Value Count. Expected: %d Got: %d", len(results), len(tst.E))
+			return makeErr(i, err, SourceInfo(2))
+		}
+
+		for i, res := range results {
+			r, err := ConvertTo(res, reflect.TypeOf(tst.E[i]))
+			if err != nil {
+				err = fmt.Errorf("Returned Value #%d error: [%v]", i, err)
+				return makeErr(i, err, SourceInfo(2))
+			}
+
+			if !reflect.DeepEqual(r, tst.E[i]) {
+				err = fmt.Errorf("Returned Value #%d error: Expected %v Got %v", i, tst.E[i], r)
+				return makeErr(i, err, SourceInfo(2))
+			}
+		}
 	}
 
 	return nil
@@ -38,10 +59,16 @@ func CallFunction(f interface{}, args []interface{}) ([]interface{}, error) {
 	fval := reflect.ValueOf(f)
 	argVals := []reflect.Value{}
 
-	for i := 0; i < fval.Type().NumIn(); i++ {
+	numIn := fval.Type().NumIn()
+
+	if len(args) != fval.Type().NumIn() {
+		return nil, fmt.Errorf("Incorrect Number of Args. Expected: %d Got: %d", numIn, len(args))
+	}
+
+	for i := 0; i < numIn; i++ {
 		arg, err := ConvertTo(args[i], fval.Type().In(i))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Param #%d Error: [%v]", i, err)
 		}
 		argVals = append(argVals, reflect.ValueOf(arg))
 	}
