@@ -12,8 +12,10 @@ import (
 type Params []interface{}
 type Expect []interface{}
 
-type NotNil struct {
+type StructNotNil struct {
 }
+
+var NotNil = StructNotNil{}
 
 type TestData struct {
 	F interface{}
@@ -34,21 +36,30 @@ func AutoTest(data []TestData) error {
 		}
 
 		if len(results) != len(tst.E) {
-			err := fmt.Errorf("Incorrect Returned Value Count. Expected: %d Got: %d", len(results), len(tst.E))
+			err := fmt.Errorf("Incorrect Returned Value Count. Expected: %d Got: %d", len(tst.E), len(results))
 			return makeErr(i, err, SourceInfo(2))
 		}
 
 		for i, res := range results {
-			r, err := ConvertTo(res, reflect.TypeOf(tst.E[i]))
-			if err != nil {
-				err = fmt.Errorf("Returned Value #%d error: [%v]", i, err)
-				return makeErr(i, err, SourceInfo(2))
+
+			if _, isNotNil := tst.E[i].(StructNotNil); isNotNil {
+				if res == nil {
+					err = fmt.Errorf("Returned Value #%d error: Expected <not nil> Got <nil>", i)
+					return makeErr(i, err, SourceInfo(2))
+				}
+			} else {
+				r, err := ConvertTo(res, reflect.TypeOf(tst.E[i]))
+				if err != nil {
+					err = fmt.Errorf("Returned Value #%d error: [%v]", i, err)
+					return makeErr(i, err, SourceInfo(2))
+				}
+
+				if !reflect.DeepEqual(r, tst.E[i]) {
+					err = fmt.Errorf("Returned Value #%d error: Expected %v Got %v", i, tst.E[i], r)
+					return makeErr(i, err, SourceInfo(2))
+				}
 			}
 
-			if !reflect.DeepEqual(r, tst.E[i]) {
-				err = fmt.Errorf("Returned Value #%d error: Expected %v Got %v", i, tst.E[i], r)
-				return makeErr(i, err, SourceInfo(2))
-			}
 		}
 	}
 

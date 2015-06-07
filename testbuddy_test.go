@@ -9,11 +9,15 @@ func test1(a, b, c int) int {
 	return a + b + c
 }
 
+func test2(a, b, c int) error {
+	return nil
+}
+
 type dummy struct {
 }
 
 var testData = []TestData{
-	{test1, Params{1, 2, 3}, Expect{dummy{}}},
+	{test2, Params{1, 2, 3}, Expect{NotNil}},
 	{test1, Params{4, "hello", 3}, Expect{9}},
 	{test1, Params{1, 2, 3}, Expect{1}},
 }
