@@ -1,6 +1,7 @@
 package testbuddy
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 )
@@ -11,6 +12,14 @@ func test1(a, b, c int) int {
 
 func test2(a, b, c int) error {
 	return nil
+}
+
+func test3(vals ...interface{}) {
+
+}
+
+func test4() (int, string, error) {
+	return 1, "1", errors.New("1")
 }
 
 type dummy struct {
@@ -34,4 +43,6 @@ func TestGetFuncName(tst *testing.T) {
 	if err != nil {
 		tst.Fatal(err)
 	}
+
+	test3(test4())
 }
