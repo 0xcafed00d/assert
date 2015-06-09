@@ -2,10 +2,7 @@ package testbuddy
 
 import (
 	"reflect"
-	"testing"
 )
-
-type T testing.T
 
 type ValTest struct {
 	val interface{}

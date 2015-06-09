@@ -1,10 +1,40 @@
 package testbuddy
 
+import (
+	"testing"
+)
+
+type T testing.T
+
 type ValSet struct {
-	val interface{}
-	t   *T
+	vals []interface{}
+	t    *T
 }
 
 func (t *T) Verify(vals ...interface{}) *ValSet {
-	return &ValTest{val, t}
+	return &ValSet{vals, t}
+}
+
+func (v *ValSet) Expect(expect ...interface{}) *ValSet {
+
+	for i, val := range v.vals {
+
+	}
+	return v
+}
+
+func (v *ValSet) ExpectError() *ValSet {
+
+	for i, val := range v.vals {
+
+	}
+	return v
+}
+
+func (v *ValSet) ExpectNoError() *ValSet {
+
+	for i, val := range v.vals {
+
+	}
+	return v
 }
