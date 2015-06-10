@@ -32,7 +32,7 @@ var testData = []TestData{
 }
 
 func TestGetFuncName(tst *testing.T) {
-	t := (*T)(tst)
+	t := T{*tst}
 
 	t.Assert(GetShortFuncName(test1)).Equal("test1")
 	t.Assert(GetFullFuncName(test1)).Equal("github.com/simulatedsimian/testbuddy.test1")
@@ -45,4 +45,8 @@ func TestGetFuncName(tst *testing.T) {
 	}
 
 	test3(test4())
+}
+
+func TestVerify(tst *testing.T) {
+
 }
