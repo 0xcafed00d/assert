@@ -1,17 +1,43 @@
 package assert
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
 
-func AssertEqual(t *testing.T, val, expect interface{}) {
+func True(t *testing.T, val bool) {
+	if !val {
+		t.Errorf("Expected: [true] got: [%v]\n%s", val, SourceInfo(2))
+	}
+}
+
+func False(t *testing.T, val bool) {
+	if val {
+		t.Errorf("Expected: [false] got: [%v]\n%s", val, SourceInfo(2))
+	}
+}
+
+func Equal(t *testing.T, val, expect interface{}) {
 	if !reflect.DeepEqual(val, expect) {
-		ci, _ := GetCallerInfo(1)
-		s := fmt.Sprintf("Expected: [%v] got: [%v]\n%s:[%d]\n%s", expect, val, ci.filename, ci.lineNum, ci.lineSrc)
-		t.Log(s)
-		t.FailNow()
+		t.Errorf("Expected: [%v] got: [%v]\n%s", expect, val, SourceInfo(2))
+	}
+}
+
+func NotEqual(t *testing.T, val, expect interface{}) {
+	if reflect.DeepEqual(val, expect) {
+		t.Errorf("Not Expecting: [%v] got: [%v]\n%s", expect, val, SourceInfo(2))
+	}
+}
+
+func Nil(t *testing.T, val interface{}) {
+	if val != nil && !reflect.ValueOf(val).IsNil() {
+		t.Errorf("Expecting: [nil] got: [%v]\n%s", val, SourceInfo(2))
+	}
+}
+
+func NotNil(t *testing.T, val interface{}) {
+	if val == nil || reflect.ValueOf(val).IsNil() {
+		t.Errorf("Expecting: [not nil] got: [%v]\n%s", val, SourceInfo(2))
 	}
 }
 

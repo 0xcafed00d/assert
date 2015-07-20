@@ -11,7 +11,7 @@ type Expect []interface{}
 type StructNotNil struct {
 }
 
-var NotNil = StructNotNil{}
+var NoNil = StructNotNil{}
 
 type TestData struct {
 	F interface{}
