@@ -1,4 +1,4 @@
-package testbuddy
+package assert
 
 import (
 	"bytes"

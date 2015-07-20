@@ -1,4 +1,4 @@
-package testbuddy
+package assert
 
 import (
 	"errors"
@@ -31,22 +31,22 @@ var testData = []TestData{
 	{test1, Params{1, 2, 3}, Expect{1}},
 }
 
-func TestGetFuncName(tst *testing.T) {
-	t := T{*tst}
+func TestGetFuncName(t *testing.T) {
+	tt := T{t}
 
-	t.Assert(GetShortFuncName(test1)).Equal("test1")
-	t.Assert(GetFullFuncName(test1)).Equal("github.com/simulatedsimian/testbuddy.test1")
+	tt.Assert(GetShortFuncName(test1)).Equal("test1")
+	tt.Assert(GetFullFuncName(test1)).Equal("github.com/simulatedsimian/testbuddy.test1")
 
-	t.AssertErr(ConvertTo(5, reflect.TypeOf(test1)))
+	tt.AssertErr(ConvertTo(5, reflect.TypeOf(test1)))
 
 	err := AutoTest(testData)
 	if err != nil {
-		tst.Fatal(err)
+		tt.Fatal(err)
 	}
 
 	test3(test4())
 }
 
-func TestVerify(tst *testing.T) {
+func TestVerify(t *testing.T) {
 
 }

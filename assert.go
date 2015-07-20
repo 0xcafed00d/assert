@@ -1,4 +1,4 @@
-package testbuddy
+package assert
 
 import (
 	"fmt"
@@ -13,4 +13,26 @@ func AssertEqual(t *testing.T, val, expect interface{}) {
 		t.Log(s)
 		t.FailNow()
 	}
+}
+
+type TestFunc func(t *testing.T)
+
+func MustPanic(t *testing.T, f TestFunc) {
+	defer func() {
+		if r := recover(); r != nil {
+		}
+	}()
+	f(t)
+	ci, _ := GetCallerInfo(1)
+	t.Errorf("Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
+}
+
+func MustNotPanic(t *testing.T, f TestFunc) {
+	defer func() {
+		if r := recover(); r != nil {
+			ci, _ := GetCallerInfo(1)
+			t.Errorf("Not Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
+		}
+	}()
+	f(t)
 }

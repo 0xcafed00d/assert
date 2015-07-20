@@ -1,11 +1,11 @@
-package testbuddy
+package assert
 
 import (
 	"testing"
 )
 
 type T struct {
-	testing.T
+	*testing.T
 }
 
 type ValSet struct {
