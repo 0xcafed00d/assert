@@ -5,61 +5,50 @@ import (
 	"testing"
 )
 
-var FailFunc func(format string, args ...interface{})
+type FailFunc func(format string, args ...interface{})
 
-func getFailFunc(t *testing.T) func(format string, args ...interface{}) {
-	if FailFunc == nil {
+var GetFailFunc func(t *testing.T) FailFunc
+
+func init() {
+	GetFailFunc = func(t *testing.T) FailFunc {
 		return t.Errorf
 	}
-	return FailFunc
 }
 
-func True(t *testing.T, val bool) bool {
+func True(t *testing.T, val bool) {
 	if !val {
-		getFailFunc(t)("Expected: [true] got: [%v]\n%s", val, SourceInfo(2))
-		return true
+		GetFailFunc(t)("Expected: [true] got: [%v]\n%s", val, SourceInfo(2))
 	}
-	return false
 }
 
-func False(t *testing.T, val bool) bool {
+func False(t *testing.T, val bool) {
 	if val {
-		getFailFunc(t)("Expected: [false] got: [%v]\n%s", val, SourceInfo(2))
-		return true
+		GetFailFunc(t)("Expected: [false] got: [%v]\n%s", val, SourceInfo(2))
 	}
-	return true
 }
 
-func Equal(t *testing.T, val, expect interface{}) bool {
+func Equal(t *testing.T, val, expect interface{}) {
 	if !reflect.DeepEqual(val, expect) {
-		getFailFunc(t)("Expected: [%v] got: [%v]\n%s", expect, val, SourceInfo(2))
-		return true
+		GetFailFunc(t)("Expected: [%v] got: [%v]\n%s", expect, val, SourceInfo(2))
 	}
-	return false
 }
 
-func NotEqual(t *testing.T, val, expect interface{}) bool {
+func NotEqual(t *testing.T, val, expect interface{}) {
 	if reflect.DeepEqual(val, expect) {
-		getFailFunc(t)("Not Expecting: [%v] got: [%v]\n%s", expect, val, SourceInfo(2))
-		return true
+		GetFailFunc(t)("Not Expecting: [%v] got: [%v]\n%s", expect, val, SourceInfo(2))
 	}
-	return false
 }
 
-func Nil(t *testing.T, val interface{}) bool {
+func Nil(t *testing.T, val interface{}) {
 	if val != nil && !reflect.ValueOf(val).IsNil() {
-		getFailFunc(t)("Expecting: [nil] got: [%v]\n%s", val, SourceInfo(2))
-		return true
+		GetFailFunc(t)("Expecting: [nil] got: [%v]\n%s", val, SourceInfo(2))
 	}
-	return false
 }
 
-func NotNil(t *testing.T, val interface{}) bool {
+func NotNil(t *testing.T, val interface{}) {
 	if val == nil || reflect.ValueOf(val).IsNil() {
-		getFailFunc(t)("Expecting: [not nil] got: [%v]\n%s", val, SourceInfo(2))
-		return true
+		GetFailFunc(t)("Expecting: [not nil] got: [%v]\n%s", val, SourceInfo(2))
 	}
-	return false
 }
 
 type TestFunc func(t *testing.T)
@@ -71,14 +60,14 @@ func MustPanic(t *testing.T, f TestFunc) {
 	}()
 	f(t)
 	ci, _ := GetCallerInfo(1)
-	getFailFunc(t)("Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
+	GetFailFunc(t)("Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
 }
 
 func MustNotPanic(t *testing.T, f TestFunc) {
 	defer func() {
 		if r := recover(); r != nil {
 			ci, _ := GetCallerInfo(1)
-			getFailFunc(t)("Not Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
+			GetFailFunc(t)("Not Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
 		}
 	}()
 	f(t)
