@@ -62,13 +62,3 @@ func MustPanic(t *testing.T, f TestFunc) {
 	ci, _ := GetCallerInfo(1)
 	GetFailFunc(t)("Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
 }
-
-func MustNotPanic(t *testing.T, f TestFunc) {
-	defer func() {
-		if r := recover(); r != nil {
-			ci, _ := GetCallerInfo(1)
-			GetFailFunc(t)("Not Expecting Panic:\n%s:[%d]\n%s", ci.filename, ci.lineNum, ci.lineSrc)
-		}
-	}()
-	f(t)
-}
