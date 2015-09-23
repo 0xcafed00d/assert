@@ -15,6 +15,11 @@ func init() {
 	}
 }
 
+// pack a number of values into a slice containing those values
+func Pack(vals ...interface{}) []interface{} {
+	return vals
+}
+
 func True(t *testing.T, val bool) {
 	if !val {
 		GetFailFunc(t)("Expected: [true] got: [%v]\n%s", val, SourceInfo(2))
@@ -48,6 +53,27 @@ func Nil(t *testing.T, val interface{}) {
 func NotNil(t *testing.T, val interface{}) {
 	if val == nil || reflect.ValueOf(val).IsNil() {
 		GetFailFunc(t)("Expecting: [not nil] got: [%v]\n%s", val, SourceInfo(2))
+	}
+}
+
+func NoError(t *testing.T, vals []interface{}) {
+	for _, v := range vals {
+		if err, ok := v.(error); ok {
+			GetFailFunc(t)("Expecting: [no error] got error: [%v]\n%s", err, SourceInfo(2))
+		}
+	}
+}
+
+func HasError(t *testing.T, vals []interface{}) {
+	foundError := false
+
+	for _, v := range vals {
+		if _, ok := v.(error); !ok {
+			foundError = true
+		}
+	}
+	if !foundError {
+		GetFailFunc(t)("Expecting: [error] got no error:\n%s", SourceInfo(2))
 	}
 }
 

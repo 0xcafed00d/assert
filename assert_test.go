@@ -1,12 +1,27 @@
 package assert
 
 import (
+	"errors"
 	"testing"
 )
 
 var failCalled = false
 var testVar int
 var testNilPtr *int
+
+func errorFunc() (int, error, int) {
+	return 1, errors.New("test error"), 9
+}
+
+func nilErrorFunc() (int, error, int) {
+	var err error
+
+	return 1, err, 9
+}
+
+func noErrorFunc() (int, int) {
+	return 1, 2
+}
 
 func TestAssert(t *testing.T) {
 	GetFailFunc = func(t *testing.T) FailFunc {
@@ -128,4 +143,43 @@ func TestAssert(t *testing.T) {
 	if !failCalled {
 		t.Errorf("MustPanic did not fail")
 	}
+
+	// -- test Error detedction ------------------------------------------------
+	failCalled = false
+	NoError(t, Pack(errorFunc()))
+	if !failCalled {
+		t.Errorf("NoError: did not fail on error")
+	}
+
+	failCalled = false
+	NoError(t, Pack(nilErrorFunc()))
+	if failCalled {
+		t.Errorf("NoError: failed on nil error")
+	}
+
+	failCalled = false
+	NoError(t, Pack(noErrorFunc()))
+	if failCalled {
+		t.Errorf("NoError: failed on no error")
+	}
+
+	_ = "breakpoint"
+	failCalled = false
+	HasError(t, Pack(errorFunc()))
+	if failCalled {
+		t.Errorf("HasError: failed on error")
+	}
+
+	failCalled = false
+	HasError(t, Pack(nilErrorFunc()))
+	if !failCalled {
+		t.Errorf("HasError: failed on nil error")
+	}
+
+	failCalled = false
+	HasError(t, Pack(noErrorFunc()))
+	if !failCalled {
+		t.Errorf("HasError: failed on no error")
+	}
+
 }
