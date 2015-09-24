@@ -163,7 +163,6 @@ func TestAssert(t *testing.T) {
 		t.Errorf("NoError: failed on no error")
 	}
 
-	_ = "breakpoint"
 	failCalled = false
 	HasError(t, Pack(errorFunc()))
 	if failCalled {

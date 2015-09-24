@@ -65,16 +65,13 @@ func NoError(t *testing.T, vals []interface{}) {
 }
 
 func HasError(t *testing.T, vals []interface{}) {
-	foundError := false
 
 	for _, v := range vals {
-		if _, ok := v.(error); !ok {
-			foundError = true
+		if _, ok := v.(error); ok {
+			return
 		}
 	}
-	if !foundError {
-		GetFailFunc(t)("Expecting: [error] got no error:\n%s", SourceInfo(2))
-	}
+	GetFailFunc(t)("Expecting: [error] got no error:\n%s", SourceInfo(2))
 }
 
 type TestFunc func(t *testing.T)
