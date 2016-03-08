@@ -14,8 +14,10 @@ type Results struct {
 
 type DoTestFunc func(args ...interface{}) *Results
 
-func isNillable(t reflect.Type) bool {
-	return t.Kind() == reflect.Ptr
+func isNillable(v interface{}) bool {
+	k := reflect.TypeOf(v).Kind()
+	return k == reflect.Ptr || k == reflect.Chan || k == reflect.Func ||
+		k == reflect.Interface || k == reflect.Map || k == reflect.Slice
 }
 
 func Make(t *testing.T, f ...failFunc) DoTestFunc {
@@ -65,7 +67,7 @@ func (r *Results) HasError() *Results {
 
 func (r *Results) IsNil() *Results {
 	for _, val := range r.results {
-		if isNillable(reflect.TypeOf(val)) && !reflect.ValueOf(val).IsNil() {
+		if val != nil && isNillable(val) && !reflect.ValueOf(val).IsNil() {
 			r.onFail("IsNil Expecting: [nil] got: [%v]\n%s", val, SourceInfo(2))
 		}
 	}
