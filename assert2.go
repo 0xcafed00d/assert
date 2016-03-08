@@ -76,7 +76,7 @@ func (r *Results) IsNil() *Results {
 
 func (r *Results) NotNil() *Results {
 	for _, val := range r.results {
-		if val == nil || reflect.ValueOf(val).IsNil() {
+		if val == nil || (isNillable(val) && reflect.ValueOf(val).IsNil()) {
 			r.onFail("NotNil Expecting: [not nil] got: [%v]\n%s", val, SourceInfo(2))
 		}
 	}
