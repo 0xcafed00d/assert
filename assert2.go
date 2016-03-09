@@ -15,6 +15,10 @@ type Results struct {
 type DoTestFunc func(args ...interface{}) *Results
 
 func isNillable(v interface{}) bool {
+	if v == nil {
+		return true
+	}
+
 	k := reflect.TypeOf(v).Kind()
 	return k == reflect.Ptr || k == reflect.Chan || k == reflect.Func ||
 		k == reflect.Interface || k == reflect.Map || k == reflect.Slice
