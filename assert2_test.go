@@ -45,7 +45,6 @@ func TestIsNillable(t *testing.T) {
 			t.Errorf("Type %v is reported as nillable", reflect.TypeOf(v))
 		}
 	}
-
 }
 
 func TestAssert2(t *testing.T) {
@@ -79,4 +78,36 @@ func TestAssert2(t *testing.T) {
 		t.Errorf("NotEqual(2, 3) failed")
 	}
 
+}
+
+func TestAssert2Error(t *testing.T) {
+	failCount := 0
+
+	test := Make(t, func(format string, args ...interface{}) {
+		failCount++
+	})
+
+	failCount = 0
+	test(errorFunc()).HasError()
+	if failCount == 1 {
+		t.Errorf("HasError failed to detect error")
+	}
+
+	failCount = 0
+	test(errorFunc()).NoError()
+	if failCount == 0 {
+		t.Errorf("NoError failed")
+	}
+
+	failCount = 0
+	test(noErrorFunc()).HasError()
+	if failCount == 0 {
+		t.Errorf("HasError failed to detect no error")
+	}
+
+	failCount = 0
+	test(noErrorFunc()).NoError()
+	if failCount == 1 {
+		t.Errorf("NoError failed")
+	}
 }
