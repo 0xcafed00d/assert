@@ -24,6 +24,10 @@ func isNillable(v interface{}) bool {
 		k == reflect.Interface || k == reflect.Map || k == reflect.Slice
 }
 
+func isNil(val interface{}) bool {
+	return val == nil || reflect.ValueOf(val).IsNil()
+}
+
 func Make(t *testing.T, f ...failFunc) DoTestFunc {
 	onFail := t.Errorf
 
@@ -37,13 +41,30 @@ func Make(t *testing.T, f ...failFunc) DoTestFunc {
 }
 
 func (r *Results) Equal(expect ...interface{}) *Results {
-	if !reflect.DeepEqual(r.results, expect) {
-		r.onFail("Equal Expected: [%v] got: [%v]\n%s", expect, r.results, SourceInfo(2))
+
+	if len(r.results) != len(expect) {
+		r.onFail("Equal Failed with Parameter count mismatch expected: [%v] got: [%v]\n%s", expect, r.results, SourceInfo(2))
+	}
+
+	for i := range r.results {
+		// if return value is a pointer then derefernce it to the value before comparison
+		if !isNil(r.results[i]) && reflect.TypeOf(r.results[i]).Kind() == reflect.Ptr {
+			r.results[i] = reflect.ValueOf(r.results[i]).Elem().Interface()
+		}
+
+		if !reflect.DeepEqual(r.results[i], expect[i]) {
+			r.onFail("Equal Expected: [%v] got: [%v]\n%s", expect, r.results, SourceInfo(2))
+		}
 	}
 	return r
 }
 
 func (r *Results) NotEqual(expect ...interface{}) *Results {
+
+	if len(r.results) != len(expect) {
+		r.onFail("Not Equal Failed with Parameter count mismatch expected: [%v] got: [%v]\n%s", expect, r.results, SourceInfo(2))
+	}
+
 	if reflect.DeepEqual(r.results, expect) {
 		r.onFail("NotEqual Not Expecting: [%v] got: [%v]\n%s", expect, r.results, SourceInfo(2))
 	}
