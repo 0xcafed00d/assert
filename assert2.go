@@ -25,7 +25,7 @@ func isNillable(v interface{}) bool {
 }
 
 func isNil(val interface{}) bool {
-	return val == nil || reflect.ValueOf(val).IsNil()
+	return isNillable(val) && (val == nil || reflect.ValueOf(val).IsNil())
 }
 
 func Make(t *testing.T, f ...failFunc) DoTestFunc {
