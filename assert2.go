@@ -12,6 +12,9 @@ type Results struct {
 	onFail  failFunc
 }
 
+type Ignore struct {
+}
+
 type DoTestFunc func(args ...interface{}) *Results
 
 func isNillable(v interface{}) bool {
@@ -47,6 +50,10 @@ func (r *Results) Equal(expect ...interface{}) *Results {
 	}
 
 	for i := range r.results {
+		if reflect.TypeOf(i) == reflect.TypeOf(Ignore{}) {
+			break
+		}
+
 		// if return value is a pointer then derefernce it to the value before comparison
 		if !isNil(r.results[i]) && reflect.TypeOf(r.results[i]).Kind() == reflect.Ptr {
 			r.results[i] = reflect.ValueOf(r.results[i]).Elem().Interface()
