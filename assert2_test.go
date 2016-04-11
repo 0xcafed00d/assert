@@ -2,6 +2,7 @@ package assert
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 	"testing"
 )
@@ -110,4 +111,12 @@ func TestAssert2Error(t *testing.T) {
 	if failCount == 1 {
 		t.Errorf("NoError failed")
 	}
+}
+
+func TestInterface(t *testing.T) {
+
+	test := Make(t)
+
+	test(io.EOF).Equal(io.EOF)
+
 }
